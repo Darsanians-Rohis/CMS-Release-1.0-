@@ -1,7 +1,7 @@
 import csv
 from io import TextIOWrapper, StringIO
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from sqlalchemy.exc import IntegrityError
 from extensions import db, bcrypt
 from models import User
@@ -13,19 +13,20 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
 
 @bp.route("/api/members")
-@login_required
+@token_required
 def list_members():
     users = User.query.order_by(User.name).all()
     return jsonify({"success": True, "members": [serialize_user(u) for u in users]})
 
 
 @bp.route("/api/members", methods=["POST"])
-@login_required
+@token_required
 def add_member():
     err = _require_admin()
     if err:
@@ -52,7 +53,7 @@ def add_member():
 
 
 @bp.route("/api/members/batch-add", methods=["POST"])
-@login_required
+@token_required
 def batch_add_members():
     err = _require_admin()
     if err:
@@ -103,8 +104,9 @@ def batch_add_members():
 
 
 @bp.route("/api/members/batch-delete", methods=["POST"])
-@login_required
+@token_required
 def batch_delete_members():
+    current_user = request.current_user
     err = _require_admin()
     if err:
         return err
@@ -137,8 +139,9 @@ def batch_delete_members():
 
 
 @bp.route("/api/members/<int:user_id>", methods=["DELETE"])
-@login_required
+@token_required
 def delete_member(user_id):
+    current_user = request.current_user
     err = _require_admin()
     if err:
         return err
@@ -159,7 +162,7 @@ def delete_member(user_id):
 
 
 @bp.route("/api/members/<int:user_id>/role", methods=["PUT"])
-@login_required
+@token_required
 def change_member_role(user_id):
     err = _require_admin()
     if err:
@@ -181,7 +184,7 @@ def change_member_role(user_id):
 
 
 @bp.route("/api/members/<int:user_id>/pic", methods=["PUT"])
-@login_required
+@token_required
 def assign_member_pic(user_id):
     err = _require_admin()
     if err:
@@ -207,7 +210,7 @@ def assign_member_pic(user_id):
 
 
 @bp.route("/api/members/<int:user_id>/attendance-permission", methods=["PUT"])
-@login_required
+@token_required
 def toggle_attendance_permission(user_id):
     err = _require_admin()
     if err:

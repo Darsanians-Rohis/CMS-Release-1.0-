@@ -13,3 +13,4 @@ ummalqura
 groq
 python-docx
 alembic==1.11.1
+PyJWT==2.8.0

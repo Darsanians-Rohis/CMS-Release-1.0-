@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from extensions import db
 from models import Session, Notulensi
 from serializers import serialize_session, serialize_notulensi
@@ -11,12 +11,13 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
 
 @bp.route("/api/notulensi")
-@login_required
+@token_required
 def list_notulensi():
     sessions = Session.query.order_by(Session.date.desc()).all()
     notes = {n.session_id: n for n in Notulensi.query.all()}
@@ -34,8 +35,9 @@ def list_notulensi():
 
 
 @bp.route("/api/notulensi/<int:session_id>", methods=["GET"])
-@login_required
+@token_required
 def get_notulensi(session_id):
+    current_user = request.current_user
     s = Session.query.get_or_404(session_id)
     note = Notulensi.query.filter_by(session_id=session_id).first()
     return jsonify({
@@ -47,7 +49,7 @@ def get_notulensi(session_id):
 
 
 @bp.route("/api/notulensi/<int:session_id>", methods=["POST"])
-@login_required
+@token_required
 def save_notulensi(session_id):
     err = _require_admin()
     if err:
@@ -71,7 +73,7 @@ def save_notulensi(session_id):
 
 
 @bp.route("/api/notulensi/by-id/<int:notulensi_id>", methods=["DELETE"])
-@login_required
+@token_required
 def delete_notulensi(notulensi_id):
     err = _require_admin()
     if err:

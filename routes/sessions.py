@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from extensions import db
 from models import Session, Attendance, Notulensi, SessionPIC, Pic
 from serializers import serialize_session, serialize_attendance
@@ -10,12 +10,13 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
 
 @bp.route("/api/sessions")
-@login_required
+@token_required
 def list_sessions():
     session_type = request.args.get("type")
     q = Session.query
@@ -26,7 +27,7 @@ def list_sessions():
 
 
 @bp.route("/api/sessions", methods=["POST"])
-@login_required
+@token_required
 def create_session():
     err = _require_admin()
     if err:
@@ -54,7 +55,7 @@ def create_session():
 
 
 @bp.route("/api/sessions/<int:session_id>", methods=["DELETE"])
-@login_required
+@token_required
 def delete_session(session_id):
     err = _require_admin()
     if err:
@@ -75,7 +76,7 @@ def delete_session(session_id):
 
 
 @bp.route("/api/sessions/<int:session_id>/lock", methods=["POST"])
-@login_required
+@token_required
 def lock_session(session_id):
     err = _require_admin()
     if err:
@@ -88,14 +89,14 @@ def lock_session(session_id):
 
 
 @bp.route("/api/sessions/<int:session_id>/status")
-@login_required
+@token_required
 def get_session_status(session_id):
     s = Session.query.get_or_404(session_id)
     return jsonify({"success": True, "is_locked": s.is_locked, "session_id": s.id, "name": s.name})
 
 
 @bp.route("/api/sessions/<int:session_id>/attendance")
-@login_required
+@token_required
 def get_session_attendance(session_id):
     Session.query.get_or_404(session_id)
     records = Attendance.query.filter_by(session_id=session_id).all()
@@ -103,7 +104,7 @@ def get_session_attendance(session_id):
 
 
 @bp.route("/api/sessions/<int:session_id>/pics", methods=["GET"])
-@login_required
+@token_required
 def get_session_pics(session_id):
     s = Session.query.get_or_404(session_id)
     return jsonify({
@@ -114,7 +115,7 @@ def get_session_pics(session_id):
 
 
 @bp.route("/api/sessions/<int:session_id>/pics", methods=["PUT"])
-@login_required
+@token_required
 def assign_pics_to_session(session_id):
     err = _require_admin()
     if err:
@@ -137,7 +138,7 @@ def assign_pics_to_session(session_id):
 
 
 @bp.route("/api/sessions/<int:session_id>/pics/<int:pic_id>", methods=["DELETE"])
-@login_required
+@token_required
 def remove_pic_from_session(session_id, pic_id):
     err = _require_admin()
     if err:

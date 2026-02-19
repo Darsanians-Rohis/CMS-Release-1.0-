@@ -1,6 +1,6 @@
 import os
 from flask import Blueprint, request, jsonify, Response
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from werkzeug.utils import secure_filename
 from extensions import db, bcrypt
 from models import User
@@ -16,8 +16,9 @@ def _allowed_file(filename):
 
 
 @bp.route("/api/profile", methods=["PUT"])
-@login_required
+@token_required
 def update_profile():
+    current_user = request.current_user
     data = request.get_json() or {}
     username = data.get("username", "").strip()
     password = data.get("password", "")
@@ -36,8 +37,9 @@ def update_profile():
 
 
 @bp.route("/api/profile/password", methods=["PUT"])
-@login_required
+@token_required
 def change_password():
+    current_user = request.current_user
     data = request.get_json() or {}
     old_password = data.get("old_password", "")
     new_password = data.get("new_password", "")
@@ -57,8 +59,9 @@ def change_password():
 
 
 @bp.route("/api/profile/picture", methods=["POST"])
-@login_required
+@token_required
 def upload_pfp():
+    current_user = request.current_user
     file = request.files.get("pfp")
     if not file or not file.filename:
         return jsonify({"success": False, "message": "No file provided"}), 400

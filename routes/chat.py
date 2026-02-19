@@ -1,6 +1,6 @@
 import logging
 from flask import Blueprint, request, jsonify
-from flask_login import login_required
+from routes.auth import token_required
 from ai import call_chatbot_groq
 
 bp = Blueprint("chat", __name__)
@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 @bp.route("/api/chat", methods=["POST"])
-@login_required
+@token_required
 def chat():
     data = request.get_json() or {}
     message = data.get("message", "").strip()

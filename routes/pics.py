@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from extensions import db
 from models import Pic, SessionPIC
 from serializers import serialize_pic
@@ -10,19 +10,20 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
 
 @bp.route("/api/pics")
-@login_required
+@token_required
 def list_pics():
     pics = Pic.query.order_by(Pic.name).all()
     return jsonify({"success": True, "pics": [serialize_pic(p) for p in pics]})
 
 
 @bp.route("/api/pics", methods=["POST"])
-@login_required
+@token_required
 def create_pic():
     err = _require_admin()
     if err:
@@ -44,7 +45,7 @@ def create_pic():
 
 
 @bp.route("/api/pics/<int:pic_id>", methods=["DELETE"])
-@login_required
+@token_required
 def delete_pic(pic_id):
     err = _require_admin()
     if err:

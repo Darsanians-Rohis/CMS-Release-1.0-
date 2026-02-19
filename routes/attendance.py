@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from io import BytesIO
 from flask import Blueprint, request, jsonify, Response
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from sqlalchemy.exc import IntegrityError
 from docx import Document
 from extensions import db
@@ -16,6 +16,7 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
@@ -54,8 +55,9 @@ def _record_attendance(session_id, user_id, status, attendance_type):
 
 
 @bp.route("/api/attendance", methods=["POST"])
-@login_required
+@token_required
 def api_attendance():
+    current_user = request.current_user
     data = request.get_json() or {}
     session_id = data.get("session_id")
     user_id = data.get("user_id")
@@ -77,8 +79,9 @@ def api_attendance():
 
 
 @bp.route("/api/attendance/core", methods=["POST"])
-@login_required
+@token_required
 def api_attendance_core():
+    current_user = request.current_user
     if not is_core_user(current_user):
         return jsonify({"success": False, "error": "forbidden", "message": "Access denied"}), 403
 
@@ -103,8 +106,9 @@ def api_attendance_core():
 
 
 @bp.route("/api/attendance/history")
-@login_required
+@token_required
 def attendance_history():
+    current_user = request.current_user
     records = Attendance.query.filter_by(user_id=current_user.id).all()
     summary = {
         "present": sum(1 for r in records if r.status == "present"),
@@ -117,7 +121,7 @@ def attendance_history():
 
 
 @bp.route("/api/attendance/history/all")
-@login_required
+@token_required
 def attendance_history_all():
     err = _require_admin()
     if err:
@@ -127,8 +131,9 @@ def attendance_history_all():
 
 
 @bp.route("/api/attendance/history/<int:user_id>")
-@login_required
+@token_required
 def attendance_history_for_user(user_id):
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES and current_user.id != user_id:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
@@ -150,7 +155,7 @@ def attendance_history_for_user(user_id):
 
 
 @bp.route("/api/export/attendance/<int:session_id>")
-@login_required
+@token_required
 def export_attendance(session_id):
     err = _require_admin()
     if err:

@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from routes.auth import token_required
 from extensions import db
 from models import JadwalPiket, PiketAssignment, EmailReminderLog
 from email_service import get_email_service
@@ -17,13 +17,15 @@ ADMIN_ROLES = {"admin", "ketua", "pembina"}
 
 
 def _require_admin():
+    current_user = request.current_user
     if current_user.role not in ADMIN_ROLES:
         return jsonify({"success": False, "message": "Access denied"}), 403
 
 
 @bp.route("/api/piket")
-@login_required
+@token_required
 def view_piket():
+    current_user = request.current_user
     today_idx = datetime.now(WIB).weekday()
     schedule = []
     for idx, name in enumerate(DAY_NAMES):
@@ -51,7 +53,7 @@ def view_piket():
 
 
 @bp.route("/api/piket", methods=["POST"])
-@login_required
+@token_required
 def update_piket():
     err = _require_admin()
     if err:
@@ -86,7 +88,7 @@ def update_piket():
 
 
 @bp.route("/api/piket/<int:day_of_week>", methods=["DELETE"])
-@login_required
+@token_required
 def clear_piket(day_of_week):
     err = _require_admin()
     if err:
@@ -102,7 +104,7 @@ def clear_piket(day_of_week):
 
 
 @bp.route("/api/piket/logs")
-@login_required
+@token_required
 def piket_logs():
     err = _require_admin()
     if err:
@@ -126,8 +128,9 @@ def piket_logs():
 
 
 @bp.route("/api/piket/test", methods=["POST"])
-@login_required
+@token_required
 def test_piket_reminder():
+    current_user = request.current_user
     if current_user.role != "admin":
         return jsonify({"success": False, "message": "Admin only"}), 403
 

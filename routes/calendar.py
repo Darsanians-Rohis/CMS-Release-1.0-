@@ -2,7 +2,7 @@ import os
 import logging
 from datetime import datetime, date
 from flask import Blueprint, jsonify
-from flask_login import login_required
+from routes.auth import token_required
 from ummalqura.hijri_date import HijriDate
 from models import Session, Notulensi, Pic, SessionPIC
 from extensions import db
@@ -61,7 +61,7 @@ def _plain_preview(html_content, max_len=150):
 
 
 @bp.route("/api/calendar")
-@login_required
+@token_required
 def calendar_events():
     events = []
     for s in Session.query.all():
@@ -96,7 +96,7 @@ def calendar_events():
 
 
 @bp.route("/api/feed")
-@login_required
+@token_required
 def news_feed():
     try:
         today_str = str(date.today())
