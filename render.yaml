@@ -6,7 +6,7 @@ services:
     startCommand: gunicorn app:app
     envVars:
       - key: SECRET_KEY
-        generateValue: true
+        sync: false
       - key: DATABASE_URL
         sync: false  
       - key: FRONTEND_ORIGIN
