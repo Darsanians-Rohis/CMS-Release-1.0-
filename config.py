@@ -22,7 +22,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
-        "connect_args": {"sslmode": "require"},
+        **({"connect_args": {"sslmode": "require"}} if _raw_db else {}),
     }
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
