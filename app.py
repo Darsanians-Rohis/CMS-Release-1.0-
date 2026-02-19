@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
+    app.config["SESSION_COOKIE_SAMESITE"] = "None"
+    app.config["SESSION_COOKIE_SECURE"] = True
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
     # ------------------------------------------------------------------
     # Extensions
     # ------------------------------------------------------------------
