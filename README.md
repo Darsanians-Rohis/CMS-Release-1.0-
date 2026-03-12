@@ -5,7 +5,8 @@ A open-source backend template for organization management systems — built to 
 > This codebase was originally built for a school Islamic organization (Rohis). The Rohis-specific content lives in well-documented spots so you can swap it out quickly. See [Adapting for Your Organization](#adapting-for-your-organization).
 
 ---
-
+# Documentation
+https://github.com/Darsanians-Rohis/CMS-Release-1.0-/blob/main/DOCUMENTATION.md
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
